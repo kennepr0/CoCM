@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Collaborative Care in Tennessee</title>
+<meta name="description" content="A practical guide to implementing the Collaborative Care Model (CoCM) with fidelity, based on the implementation guide developed by the ETSU Institute for Integrated Behavioral Health and BlueCross BlueShield of Tennessee.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: co-branded navy masthead → mission → three pathway cards → short sections (billing, registry, psychiatry) → FAQ accordion → contact band */
+:root {
+  --navy: #041E42;          /* ETSU navy */
+  --gold: #FFC72C;          /* ETSU gold */
+  --blue: #0065B3;          /* BCBST blue */
+  --bg: #F5F7FA;
+  --surface: #FFFFFF;
+  --ink: #142033;
+  --muted: #4E5D72;
+  --line: #D9E0EA;
+  --tint: #E8F0F9;
+  --link: #0058A0;
+  --hero-ink: #FFFFFF;
+  --hero-muted: #C6D2E3;
+  --font-display: "Literata", Georgia, "Times New Roman", serif;
+  --font-body: "Public Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1424; --surface: #121E33; --ink: #E7ECF4; --muted: #A3B1C6;
+    --line: #26354F; --tint: #17294A; --link: #7DB8F0; --blue: #4C9BE0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1424; --surface: #121E33; --ink: #E7ECF4; --muted: #A3B1C6;
+  --line: #26354F; --tint: #17294A; --link: #7DB8F0; --blue: #4C9BE0;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 400 17px/1.65 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--link); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 3px solid var(--gold); outline-offset: 2px; border-radius: 4px;
+}
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.2; margin: 0; }
+p { margin: 0; }
+.wrap {
+  max-width: 1080px; margin: 0 auto;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+.eyebrow {
+  font: 600 12.5px/1 var(--font-body); letter-spacing: .12em; text-transform: uppercase; color: var(--blue);
+}
+
+/* ---------- Masthead ---------- */
+.masthead { background: var(--navy); color: var(--hero-ink); border-top: 6px solid var(--gold); }
+.brandbar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 28px;
+  padding-block: 18px; border-bottom: 1px solid rgba(255,255,255,.14);
+}
+.lockup { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+.mark { display: flex; align-items: center; gap: 10px; color: var(--hero-ink); text-decoration: none; }
+.mark .badge {
+  display: grid; place-items: center; width: 42px; height: 42px; border-radius: 8px;
+  font: 700 14px/1 var(--font-body); letter-spacing: .02em;
+}
+.mark.etsu .badge { background: var(--gold); color: var(--navy); }
+.mark.bcbs .badge { background: #0065B3; color: #fff; }
+.mark .name { font: 600 14px/1.25 var(--font-body); }
+.mark .name small { display: block; font-weight: 400; color: var(--hero-muted); font-size: 12.5px; }
+.lockup .x { color: var(--gold); font: 500 18px/1 var(--font-body); }
+.topnav { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 14.5px; }
+.topnav a { color: var(--hero-muted); text-decoration: none; padding: 4px 0; }
+.topnav a:hover { color: #fff; text-decoration: underline; }
+
+.hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .9fr); gap: 48px; align-items: center; padding-block: 56px 64px; }
+.hero h1 { font-size: clamp(34px, 5vw, 54px); font-weight: 600; letter-spacing: -.01em; }
+.hero h1 em { font-style: normal; color: var(--gold); }
+.hero .lede { margin-top: 22px; font-size: 19px; color: var(--hero-muted); max-width: 34em; }
+.hero .lede strong { color: #fff; font-weight: 600; }
+.hero .cta { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 12px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 999px;
+  font: 600 15px/1 var(--font-body); text-decoration: none; border: 2px solid transparent; cursor: pointer;
+}
+.btn.primary { background: var(--gold); color: var(--navy); }
+.btn.primary:hover { background: #ffd65e; }
+.btn.ghost { color: #fff; border-color: rgba(255,255,255,.35); }
+.btn.ghost:hover { border-color: #fff; }
+
+.team-fig { width: 100%; max-width: 400px; justify-self: center; }
+.team-fig svg { width: 100%; height: auto; display: block; }
+.team-fig figcaption { margin-top: 10px; font-size: 13px; color: var(--hero-muted); text-align: center; }
+
+/* ---------- Mission ---------- */
+.mission { padding-block: 64px 24px; }
+.mission-grid { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 40px; }
+.mission h2 { font-size: 26px; }
+.mission .prose { display: grid; gap: 18px; font-size: 18px; max-width: 40em; }
+.mission .prose p:first-child::first-line { font-weight: 600; }
+.pillars { margin-top: 30px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.pillar { border-top: 3px solid var(--blue); padding-top: 12px; font-size: 15px; color: var(--muted); }
+.pillar b { display: block; color: var(--ink); font-size: 16px; margin-bottom: 2px; }
+
+/* ---------- Pathway cards ---------- */
+.paths { padding-block: 40px 24px; }
+.paths-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 20px; margin-bottom: 20px; }
+.paths-head h2 { font-size: 30px; }
+.paths-head p { color: var(--muted); }
+.cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.card {
+  display: flex; flex-direction: column; gap: 10px; padding: 22px 20px 20px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  color: var(--ink); text-decoration: none; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.card:hover { transform: translateY(-3px); border-color: var(--blue); box-shadow: 0 10px 24px -14px rgba(4,30,66,.45); }
+.card .code { font: 500 12.5px/1 var(--font-mono); color: var(--blue); }
+.card h3 { font-size: 21px; }
+.card p { font-size: 15px; color: var(--muted); flex: 1; }
+.card .go { font: 600 14px/1 var(--font-body); color: var(--link); }
+
+/* ---------- Sections ---------- */
+.section { padding-block: 56px; border-top: 1px solid var(--line); scroll-margin-top: 12px; }
+.section:first-of-type { border-top: 0; }
+.sec-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 24px; align-items: end; margin-bottom: 26px; }
+.sec-head h2 { font-size: clamp(28px, 3.6vw, 38px); margin-top: 8px; }
+.sec-head .intro { grid-column: 1 / -1; color: var(--muted); font-size: 18px; max-width: 42em; margin-top: 6px; }
+.back { font-size: 14px; white-space: nowrap; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; min-width: 0; }
+.panel h3 { font-size: 20px; margin-bottom: 12px; }
+.checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.checks li { position: relative; padding-left: 28px; }
+.checks li::before {
+  content: ""; position: absolute; left: 2px; top: .45em; width: 14px; height: 8px;
+  border-left: 2.5px solid var(--blue); border-bottom: 2.5px solid var(--blue); transform: rotate(-45deg);
+}
+.note {
+  margin-top: 22px; padding: 16px 18px; border-radius: var(--radius); background: var(--tint);
+  font-size: 15.5px; border-left: 4px solid var(--gold);
+}
+.note b { font-weight: 600; }
+.source { margin-top: 14px; font-size: 13px; color: var(--muted); }
+
+/* Billing table */
+.table-scroll { overflow-x: auto; margin-top: 4px; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 520px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 600 12px/1.3 var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+td.min { font-variant-numeric: tabular-nums; white-space: nowrap; }
+td code, .calc code { font: 500 14px/1 var(--font-mono); background: var(--tint); padding: 3px 6px; border-radius: 4px; white-space: nowrap; }
+tr.group td { background: var(--bg); font-weight: 600; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+
+/* Calculator */
+.calc { display: grid; gap: 16px; }
+.calc .fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+.calc label { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
+.calc input, .calc select {
+  font: 500 17px/1.2 var(--font-body); padding: 10px 12px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 100%;
+}
+.calc .result { border-radius: 8px; background: var(--navy); color: #fff; padding: 18px; }
+.calc .result .codes { font: 600 26px/1.2 var(--font-mono); color: var(--gold); }
+.calc .result p { margin-top: 6px; font-size: 14.5px; color: var(--hero-muted); }
+.calc .fine { font-size: 13px; color: var(--muted); }
+
+.formula { font: 500 14.5px/1.5 var(--font-mono); background: var(--tint); padding: 10px 12px; border-radius: 6px; margin-top: 8px; overflow-x: auto; }
+
+/* Registry options */
+.options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 28px; }
+.opt { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; display: grid; gap: 6px; }
+.opt .ex { font: 500 12.5px/1 var(--font-mono); color: var(--blue); }
+.opt h3 { font-size: 18px; }
+.opt dl { margin: 4px 0 0; display: grid; gap: 6px; font-size: 14.5px; }
+.opt dt { font-weight: 600; }
+.opt dd { margin: 0; color: var(--muted); }
+
+/* Psychiatry steps */
+.steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 0; counter-reset: s; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; padding-block: 14px; border-bottom: 1px solid var(--line); }
+.steps li:last-child { border-bottom: 0; }
+.steps li::before {
+  content: counter(s); display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%;
+  background: var(--navy); color: var(--gold); font: 600 14px/1 var(--font-body);
+}
+:root[data-theme="dark"] .steps li::before { background: var(--gold); color: var(--navy); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .steps li::before { background: var(--gold); color: var(--navy); } }
+.steps b { display: block; }
+.steps span { color: var(--muted); font-size: 15.5px; }
+
+/* FAQ */
+.faq { display: grid; gap: 10px; max-width: 820px; }
+.faq details { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.faq summary {
+  cursor: pointer; list-style: none; padding: 16px 52px 16px 20px; position: relative;
+  font: 600 17px/1.4 var(--font-body);
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: ""; position: absolute; right: 22px; top: 50%; width: 10px; height: 10px;
+  border-right: 2px solid var(--blue); border-bottom: 2px solid var(--blue);
+  transform: translateY(-70%) rotate(45deg); transition: transform .2s ease;
+}
+.faq details[open] summary::after { transform: translateY(-30%) rotate(-135deg); }
+.faq .ans { padding: 0 20px 18px; color: var(--muted); display: grid; gap: 10px; }
+
+/* Contact */
+.contact { background: var(--navy); color: #fff; border-bottom: 6px solid var(--gold); }
+.contact .wrap { padding-block: 56px; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 32px; align-items: center; }
+.contact h2 { font-size: clamp(26px, 3.4vw, 36px); }
+.contact p { color: var(--hero-muted); margin-top: 12px; font-size: 17px; max-width: 36em; }
+.contact-card { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); border-radius: var(--radius); padding: 22px; display: grid; gap: 6px; }
+.contact-card .who { font: 600 20px/1.3 var(--font-display); }
+.contact-card .role { color: var(--hero-muted); font-size: 14.5px; }
+.contact-card .email { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.contact-card .email a { color: var(--gold); font: 500 16px/1.3 var(--font-mono); word-break: break-all; }
+.copy { font: 600 13px/1 var(--font-body); padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.35); background: transparent; color: #fff; cursor: pointer; }
+.copy:hover { border-color: #fff; }
+footer { padding-block: 26px 40px; font-size: 13.5px; color: var(--muted); }
+footer .wrap { display: grid; gap: 8px; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 920px) {
+  .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 32px; padding-block: 40px 48px; }
+  .team-fig { max-width: 340px; }
+  .contact .wrap { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 720px) {
+  body { font-size: 16px; }
+  .mission-grid, .two, .options { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .pillars { grid-template-columns: minmax(0, 1fr); }
+  .sec-head { grid-template-columns: minmax(0, 1fr); }
+  .calc .fields { grid-template-columns: minmax(0, 1fr); }
+  .topnav { display: none; }
+}
+@media (max-width: 480px) {
+  .cards { grid-template-columns: minmax(0, 1fr); }
+  .hero .lede { font-size: 17px; }
+}
+.sitename { font: 600 20px/1.2 var(--font-display); color: var(--hero-ink); }
+.sitename span { color: var(--gold); }
+.hero .attrib { margin-top: 16px; font-size: 14.5px; color: var(--hero-muted); max-width: 40em; border-left: 3px solid var(--gold); padding-left: 12px; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap brandbar">
+    <span class="sitename">Collaborative Care <span>in Tennessee</span></span>
+    <nav class="topnav" aria-label="Sections">
+      <a href="#billing">Billing</a>
+      <a href="#registry">Registry</a>
+      <a href="#psychiatry">Psychiatry</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">Full guide</a>
+    </nav>
+  </div>
+
+  <div class="wrap hero">
+    <div>
+      <p class="eyebrow" style="color: var(--gold)">Collaborative Care Model · Tennessee</p>
+      <h1 style="margin-top:14px">Collaborative care, <em>done right</em>, for Tennessee patients.</h1>
+      <p class="attrib">Based on the CoCM Implementation Guide developed by the East Tennessee State University Institute for Integrated Behavioral Health and BlueCross BlueShield of Tennessee.</p>
+      <p class="lede">We’re glad you’re interested in the Collaborative Care Model. You’ve found a resource drawn from clinicians who have done this work in a Tennessee primary care clinic, with <strong>practical steps to deliver CoCM with fidelity</strong>, bill for it correctly, and keep it going.</p>
+      <div class="cta">
+        <a class="btn primary" href="#start">Start here</a>
+        <a class="btn ghost" href="#contact">Request the full guide</a>
+      </div>
+    </div>
+
+    <figure class="team-fig" style="margin:0">
+      <svg viewBox="0 0 400 340" role="img" aria-labelledby="teamTitle">
+        <title id="teamTitle">The CoCM care team: primary care clinician, behavioral health care manager, and psychiatric consultant around the patient, linked by a shared registry.</title>
+        <g fill="none" stroke="#FFC72C" stroke-width="2" stroke-dasharray="5 6" opacity=".8">
+          <line x1="200" y1="62" x2="72" y2="262"/>
+          <line x1="200" y1="62" x2="328" y2="262"/>
+          <line x1="72" y1="262" x2="328" y2="262"/>
+        </g>
+        <circle cx="200" cy="190" r="58" fill="#0065B3"/>
+        <circle cx="200" cy="190" r="58" fill="none" stroke="#FFFFFF" stroke-opacity=".35" stroke-width="2"/>
+        <text x="200" y="186" text-anchor="middle" fill="#FFFFFF" font-family="Literata, Georgia, serif" font-size="20" font-weight="600">Patient</text>
+        <text x="200" y="208" text-anchor="middle" fill="#C6D2E3" font-family="Public Sans, Arial, sans-serif" font-size="12">+ shared registry</text>
+
+        <g font-family="Public Sans, Arial, sans-serif" text-anchor="middle">
+          <circle cx="200" cy="62" r="36" fill="#FFC72C"/>
+          <text x="200" y="68" fill="#041E42" font-size="16" font-weight="700">PCP</text>
+          <text x="200" y="16" fill="#FFFFFF" font-size="13" font-weight="600">Primary care clinician</text>
+
+          <circle cx="72" cy="262" r="36" fill="#FFC72C"/>
+          <text x="72" y="268" fill="#041E42" font-size="16" font-weight="700">BHCM</text>
+          <text x="72" y="320" fill="#FFFFFF" font-size="13" font-weight="600">Care manager</text>
+
+          <circle cx="328" cy="262" r="36" fill="#FFC72C"/>
+          <text x="328" y="268" fill="#041E42" font-size="16" font-weight="700">Psych</text>
+          <text x="328" y="320" fill="#FFFFFF" font-size="13" font-weight="600">Psychiatric consultant</text>
+        </g>
+      </svg>
+      <figcaption>Three roles, one registry, care that treats to target.</figcaption>
+    </figure>
+  </div>
+</header>
+
+<main>
+  <section class="wrap mission" id="start" aria-labelledby="missionTitle">
+    <div class="mission-grid">
+      <div>
+        <p class="eyebrow">Why this site exists</p>
+        <h2 id="missionTitle" style="margin-top:10px">Good care and correct billing come from the same place: fidelity.</h2>
+      </div>
+      <div class="prose">
+        <p>The Collaborative Care Model works. Decades of research show that when a primary care clinician, a behavioral health care manager, and a consulting psychiatrist share a registry, measure symptoms over time, and adjust treatment for patients who aren’t improving, people get better. That is why BlueCross BlueShield of Tennessee covers CoCM, and why Tennessee now requires every third-party payer to reimburse the CoCM codes.</p>
+        <p>Coverage only helps patients if the model is delivered the way it was designed. This site, drawn from the ETSU–BCBST implementation guide and the ETSU pilot in East Tennessee, shows you how to do that: how to bill the codes so you get paid and follow the rules, how to build a registry that keeps every patient in view, and how to bring psychiatry into the team. The goal is to help this model spread across Tennessee with the quality that makes it worth paying for.</p>
+        <div class="pillars">
+          <div class="pillar"><b>Follow the model</b>Population-based, measurement-based care with regular psychiatric review.</div>
+          <div class="pillar"><b>Bill correctly</b>Document time and activity so every claim reflects real care.</div>
+          <div class="pillar"><b>Sustain it</b>Workflows, staffing, and revenue that last past the pilot.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap paths" aria-labelledby="pathsTitle">
+    <div class="paths-head">
+      <h2 id="pathsTitle">Where do you want to start?</h2>
+      <p>Each section is short. Read one, or all four.</p>
+    </div>
+    <div class="cards">
+      <a class="card" href="#billing">
+        <span class="code">99492 · 99493 · 99494</span>
+        <h3>Billing for the codes</h3>
+        <p>Time thresholds, base and add-on codes, and how to confirm your claims before you scale.</p>
+        <span class="go">Read billing →</span>
+      </a>
+      <a class="card" href="#registry">
+        <span class="code">PHQ-9 · GAD-7 · follow-up</span>
+        <h3>Implementing a registry</h3>
+        <p>What a registry must do, and how spreadsheets, REDCap, purpose-built tools, and EHRs compare.</p>
+        <span class="go">Read registry →</span>
+      </a>
+      <a class="card" href="#psychiatry">
+        <span class="code">Weekly caseload review</span>
+        <h3>Engaging psychiatry</h3>
+        <p>How the consulting psychiatrist fits in, and how to plan a review that actually changes care.</p>
+        <span class="go">Read psychiatry →</span>
+      </a>
+      <a class="card" href="#faq">
+        <span class="code">Common questions</span>
+        <h3>FAQ</h3>
+        <p>Coverage, team roles, training, telehealth, and how to tell whether it’s working.</p>
+        <span class="go">Read FAQ →</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ===================== BILLING ===================== -->
+  <section class="section" id="billing" aria-labelledby="billingTitle">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <p class="eyebrow">Section 1</p>
+          <h2 id="billingTitle">Billing for the CoCM codes</h2>
+        </div>
+        <a class="back" href="#start">↑ Back to top</a>
+        <p class="intro">CoCM codes are billed once per calendar month, based on the total time the care team spends on a patient’s collaborative care. The time adds up across many short contacts, so your documentation has to capture every one.</p>
+      </div>
+
+      <div class="two">
+        <div class="panel">
+          <h3>Time-based code table</h3>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Total time / month</th><th>Base</th><th>Add-on</th></tr></thead>
+              <tbody>
+                <tr class="group"><td colspan="3">Initial month</td></tr>
+                <tr><td class="min">36–85 min</td><td><code>99492</code></td><td>None</td></tr>
+                <tr><td class="min">86–115 min</td><td><code>99492</code></td><td><code>99494</code> ×1</td></tr>
+                <tr><td class="min">116–145 min</td><td><code>99492</code></td><td><code>99494</code> ×2</td></tr>
+                <tr class="group"><td colspan="3">Subsequent months</td></tr>
+                <tr><td class="min">31–75 min</td><td><code>99493</code></td><td>None</td></tr>
+                <tr><td class="min">76–105 min</td><td><code>99493</code></td><td><code>99494</code> ×1</td></tr>
+                <tr><td class="min">106–135 min</td><td><code>99493</code></td><td><code>99494</code> ×2</td></tr>
+                <tr class="group"><td colspan="3">Shorter month</td></tr>
+                <tr><td class="min">30 min, base not met</td><td><code>G2214</code></td><td>None</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="source">99492 covers the first 70 minutes and 99493 the first 60, under CPT time rules. Verify payer-specific rules, especially for G2214.</p>
+        </div>
+
+        <div class="panel">
+          <h3>Find the code for a month</h3>
+          <form class="calc" id="calc" onsubmit="return false">
+            <div class="fields">
+              <label for="calc-month">Month of care
+                <select id="calc-month">
+                  <option value="initial">Initial month</option>
+                  <option value="subsequent" selected>Subsequent month</option>
+                </select>
+              </label>
+              <label for="calc-min">Total CoCM minutes
+                <input id="calc-min" type="number" inputmode="numeric" min="0" max="300" step="1" value="82">
+              </label>
+            </div>
+            <div class="result" aria-live="polite">
+              <div class="codes" id="calc-codes">99493 + 99494</div>
+              <p id="calc-note">Subsequent month, 82 minutes.</p>
+            </div>
+            <p class="fine">A quick check against the table above. It is not billing advice; confirm with your billing team and payer.</p>
+          </form>
+        </div>
+      </div>
+
+      <div class="two" style="margin-top:28px">
+        <div class="panel">
+          <h3>Getting it right</h3>
+          <ul class="checks">
+            <li>Track cumulative CoCM time for each patient, per calendar month, as it happens.</li>
+            <li>Document the activities behind the time: outreach, follow-up visits, registry updates, and caseload review with the psychiatric consultant.</li>
+            <li>Confirm eligible billing practitioners, payer rules, and limits on billing other services in the same period.</li>
+            <li>Before you scale, send a small sample of claims (8–10) to BlueCross BlueShield of Tennessee for feedback, then refine your workflow.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Planning for sustainability</h3>
+          <p style="color:var(--muted); font-size:15.5px">In 2025, Tennessee passed legislation requiring all third-party payers to reimburse the CoCM codes. Two formulas help you plan:</p>
+          <div class="formula">Expected revenue = Billable service volume × Expected payment per service</div>
+          <div class="formula">Break-even volume = Total program cost ÷ Average net revenue per billable episode</div>
+          <p class="source">Adjust for payer mix, denials, and collection rates. Costs include BHCM and psychiatric consultant time, admin support, registry or technology, and training.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== REGISTRY ===================== -->
+  <section class="section" id="registry" aria-labelledby="registryTitle">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <p class="eyebrow">Section 2</p>
+          <h2 id="registryTitle">Implementing a registry</h2>
+        </div>
+        <a class="back" href="#start">↑ Back to top</a>
+        <p class="intro">The registry is what makes CoCM population-based. It lets your team see every enrolled patient at once and spot the ones who aren’t getting better. It doesn’t have to be fancy. It has to be used.</p>
+      </div>
+
+      <div class="two">
+        <div class="panel">
+          <h3>At minimum, your registry should</h3>
+          <ul class="checks">
+            <li>Identify every patient enrolled in CoCM.</li>
+            <li>Track clinical measures (such as the PHQ-9 or GAD-7) and follow-up over time.</li>
+            <li>Monitor engagement, so patients who drop off are noticed.</li>
+            <li>Flag patients who are not improving as expected.</li>
+            <li>Support systematic caseload review with the psychiatric consultant.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>From the ETSU pilot</h3>
+          <p style="color:var(--muted); font-size:15.5px">The ETSU team built its registry in REDCap while the organization was changing EHRs. It captured patient and behavioral health information, CoCM time, follow-up activity, psychiatric consultation, safety planning, and measures including the PHQ-A, GAD-7, CRAFFT+N, CORS, SRS, ACE, and PSC-17.</p>
+          <div class="note"><b>Tip:</b> Capturing CoCM time in the registry lets you build billing triggers in, so you can see when a patient crosses a code threshold for the month.</div>
+        </div>
+      </div>
+
+      <div class="options">
+        <div class="opt">
+          <span class="ex">e.g. secure Excel spreadsheet</span>
+          <h3>Spreadsheet</h3>
+          <dl><dt>Good for</dt><dd>Low cost, available now, easy to customize.</dd><dt>Watch for</dt><dd>Manual entry; harder to manage as volume grows.</dd></dl>
+        </div>
+        <div class="opt">
+          <span class="ex">e.g. REDCap</span>
+          <h3>Custom database</h3>
+          <dl><dt>Good for</dt><dd>Highly customizable; structured data collection, tracking, and reporting.</dd><dt>Watch for</dt><dd>Needs local development, maintenance, and user access management.</dd></dl>
+        </div>
+        <div class="opt">
+          <span class="ex">e.g. AIMS Caseload Tracker</span>
+          <h3>Purpose-built CoCM registry</h3>
+          <dl><dt>Good for</dt><dd>Designed for CoCM population management and caseload review.</dd><dt>Watch for</dt><dd>May sit outside the EHR and need coordination between systems.</dd></dl>
+        </div>
+        <div class="opt">
+          <span class="ex">e.g. Epic or another EHR</span>
+          <h3>EHR-integrated</h3>
+          <dl><dt>Good for</dt><dd>Fits existing workflows; can reduce duplicate documentation.</dd><dt>Watch for</dt><dd>Depends on your EHR and available informatics support.</dd></dl>
+        </div>
+      </div>
+      <p class="source">Start from what the registry needs to do, not from a software product. Plan for privacy, role-based access, and how data moves between the registry and your EHR.</p>
+    </div>
+  </section>
+
+  <!-- ===================== PSYCHIATRY ===================== -->
+  <section class="section" id="psychiatry" aria-labelledby="psychTitle">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <p class="eyebrow">Section 3</p>
+          <h2 id="psychTitle">Engaging psychiatry</h2>
+        </div>
+        <a class="back" href="#start">↑ Back to top</a>
+        <p class="intro">In CoCM, the psychiatric consultant supports the whole caseload instead of seeing every patient. Through regular review with the care manager, one psychiatrist’s expertise reaches many more people in primary care.</p>
+      </div>
+
+      <div class="two">
+        <div class="panel">
+          <h3>Plan these before you start</h3>
+          <ol class="steps">
+            <li><div><b>Find the right consultant</b><span>Clinical expertise that fits your population, and protected time for caseload review.</span></div></li>
+            <li><div><b>Set the rhythm</b><span>Decide how often you’ll meet and in what format. Predictable is better than frequent.</span></div></li>
+            <li><div><b>Prioritize the cases</b><span>Use the registry to bring forward new patients and those not improving as expected.</span></div></li>
+            <li><div><b>Close the loop</b><span>Decide how recommendations are documented and passed to the PCP, who prescribes.</span></div></li>
+            <li><div><b>Plan for coverage</b><span>Know who reviews cases when the consultant is unavailable.</span></div></li>
+          </ol>
+        </div>
+        <div class="panel">
+          <h3>How it worked in the ETSU pilot</h3>
+          <p style="color:var(--muted); font-size:15.5px">The ETSU team partnered with a psychiatrist with extensive child and adolescent experience. Each week, the psychiatrist and the care manager met for a one-hour, HIPAA-compliant video conference. Physicians were invited to join and present their own patients when they could.</p>
+          <div class="note"><b>Build team buy-in.</b> A formal kickoff, at a staff meeting or Grand Rounds, helps every clinician understand how and when to involve the care manager and the psychiatric consultant.</div>
+          <p class="source" style="margin-top:18px">Each role, in brief: the <b>PCP</b> provides medical care and prescribes; the <b>BHCM</b> engages patients, tracks the registry, and coordinates; the <b>psychiatric consultant</b> reviews cases and recommends treatment changes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FAQ ===================== -->
+  <section class="section" id="faq" aria-labelledby="faqTitle">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <p class="eyebrow">Section 4</p>
+          <h2 id="faqTitle">Frequently asked questions</h2>
+        </div>
+        <a class="back" href="#start">↑ Back to top</a>
+      </div>
+
+      <div class="faq">
+        <details>
+          <summary>What is the Collaborative Care Model?</summary>
+          <div class="ans"><p>CoCM is a team-based way to treat behavioral health conditions in primary care. The primary care clinician works with a behavioral health care manager and a psychiatric consultant to identify, monitor, and treat patients, using a registry and validated measures to track progress and catch patients who aren’t improving.</p></div>
+        </details>
+        <details>
+          <summary>How is CoCM different from other integrated care models?</summary>
+          <div class="ans"><p>Primary Care Behavioral Health (PCBH) focuses on brief, same-day support for the whole clinic population. CoCM treats and tracks a defined group of patients with scheduled follow-up and structured psychiatric review. The two work well together, and many clinics use both.</p></div>
+        </details>
+        <details>
+          <summary>Will BlueCross BlueShield of Tennessee pay for CoCM?</summary>
+          <div class="ans"><p>Yes. BCBST covers the CoCM codes, and in its 2025 session Tennessee passed legislation requiring all third-party payers to reimburse them. Before you scale, consider sending 8–10 sample encounters to BCBST to confirm your documentation and billing meet expectations.</p></div>
+        </details>
+        <details>
+          <summary>Which conditions should we start with?</summary>
+          <div class="ans"><p>Start small. Many practices begin with depression because it is common in primary care, the PHQ-9 is a well-validated measure, and it fits the measurement-based approach CoCM billing requires. Expand once your workflows are solid.</p></div>
+        </details>
+        <details>
+          <summary>Does the psychiatrist need to see every patient?</summary>
+          <div class="ans"><p>No. The consulting psychiatrist mainly reviews cases with the care manager and recommends treatment changes. The primary care clinician stays responsible for the patient’s care and prescribing.</p></div>
+        </details>
+        <details>
+          <summary>Do we need an EHR-based registry?</summary>
+          <div class="ans"><p>No. A secure spreadsheet, REDCap, a purpose-built tool like the AIMS Caseload Tracker, or your EHR can all work, as long as the registry reliably tracks enrolled patients, measures, follow-up, and who isn’t improving. See <a href="#registry">Implementing a registry</a>.</p></div>
+        </details>
+        <details>
+          <summary>Can follow-up happen by phone or telehealth?</summary>
+          <div class="ans"><p>Yes, and it matters. Regular contact with the care manager is one of the strongest drivers of improvement. The ETSU pilot used a HIPAA-compliant telecommunication app for patient contact and video conferencing for psychiatric review. Confirm which channels your organization approves before building them into workflows.</p></div>
+        </details>
+        <details>
+          <summary>What training does the care team need?</summary>
+          <div class="ans"><p>Everyone on the team should learn the principles and workflows of CoCM. Care managers typically complete the <a href="https://aims.uw.edu/" target="_blank" rel="noopener">AIMS Center</a> Behavioral Health Care Manager training. In the ETSU pilot, care managers also used the Meadows Mental Health Policy Institute Collaborative Care Training Hub and found the two complementary.</p></div>
+        </details>
+        <details>
+          <summary>How will we know it’s working?</summary>
+          <div class="ans"><p>Track how patients move through the pathway: the share of eligible visits screened, the share of patients above threshold who are referred, and the share referred who enroll. Watch symptom scores over time for each patient, not just the average, so no one who is stuck gets missed.</p></div>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<section class="contact" id="contact" aria-labelledby="contactTitle">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow" style="color: var(--gold)">The full implementation guide</p>
+      <h2 id="contactTitle" style="margin-top:10px">Ready to go deeper?</h2>
+      <p>The complete ETSU–BCBST guide walks through every phase of implementation (Explore, Prepare, Implement, Sustain) with workflows, readiness tools, quality measures, and lessons from the ETSU pilot. Reach out to request a copy.</p>
+    </div>
+    <div class="contact-card">
+      <span class="who">Jodi Polaha, PhD</span>
+      <span class="role">East Tennessee State University</span>
+      <div class="email">
+        <a id="email" href="mailto:polaha@etsu.edu">polaha@etsu.edu</a>
+        <button class="copy" type="button" id="copyBtn">Copy email</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Developed through a partnership between the East Tennessee State University Institute for Integrated Behavioral Health and BlueCross BlueShield of Tennessee.</p>
+    <p>This site is for general information. Coding and payment rules change; confirm current requirements with your payer and billing team.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var month = document.getElementById('calc-month');
+  var mins = document.getElementById('calc-min');
+  var codesEl = document.getElementById('calc-codes');
+  var noteEl = document.getElementById('calc-note');
+
+  // Thresholds from the guide's time-based billing table.
+  var bands = {
+    initial:    { base: '99492', start: 36, addOns: [86, 116], cap: 145 },
+    subsequent: { base: '99493', start: 31, addOns: [76, 106], cap: 135 }
+  };
+
+  function update() {
+    var b = bands[month.value];
+    var m = parseInt(mins.value, 10);
+    var label = (month.value === 'initial' ? 'Initial' : 'Subsequent') + ' month';
+    if (isNaN(m) || m < 0) { codesEl.textContent = '—'; noteEl.textContent = 'Enter the total minutes for the month.'; return; }
+    label += ', ' + m + ' minute' + (m === 1 ? '' : 's') + '.';
+    if (m < 30) {
+      codesEl.textContent = 'Not yet billable';
+      noteEl.textContent = label + ' Keep tracking time through the end of the month.';
+    } else if (m < b.start) {
+      codesEl.textContent = 'G2214';
+      noteEl.textContent = label + ' Below the ' + b.base + ' threshold. G2214 may apply; verify payer rules.';
+    } else {
+      var units = b.addOns.filter(function (t) { return m >= t; }).length;
+      codesEl.textContent = b.base + (units ? ' + 99494' + (units > 1 ? ' ×' + units : '') : '');
+      noteEl.textContent = label + (m > b.cap ? ' Beyond the table’s range; check payer rules for additional units.' : '');
+    }
+  }
+  month.addEventListener('change', update);
+  mins.addEventListener('input', update);
+  update();
+
+  var btn = document.getElementById('copyBtn');
+  var email = document.getElementById('email');
+  btn.addEventListener('click', function () {
+    var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy email'; }, 1600); };
+    var fallback = function () {
+      var r = document.createRange(); r.selectNodeContents(email);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = 'Selected';
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(email.textContent).then(done, fallback);
+    } else { fallback(); }
+  });
+})();
+</script>
+
+</body>
+</html>
